@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
+import 'dart:math';
 
-import '../blocs/bloc_provider.dart';
+import './ShowNews.dart';
 
 import '../hn/hn.dart';
 import '../hn/item.dart';
@@ -22,17 +23,21 @@ class Home extends StatelessWidget {
               body = Center(child: CircularProgressIndicator());
               break;
             case ConnectionState.done:
-              body = ListView(
-                padding: const EdgeInsets.all(10.0),
-                children: snapshot.data.map((item) {
-                  return MiniNews(
-                    subject: item.title,
-                    author: item.by,
-                    points: item.score.toString(),
-                    commentsCount: item.descendants.toString(),
-                    url: item.url,
-                  );
-                }).toList(),
+              body = Container(
+                color: Colors.deepOrange,
+                child: ListView(
+                  padding: const EdgeInsets.only(top: 1.0),
+                  children: snapshot.data.map((item) {
+                    return MiniNews(
+                      id: item.id,
+                      subject: item.title,
+                      author: item.by,
+                      points: item.score.toString(),
+                      commentsCount: item.descendants.toString(),
+                      url: item.url,
+                    );
+                  }).toList(),
+                ),
               );
           }
 
@@ -52,6 +57,7 @@ class Home extends StatelessWidget {
 // mininews utilisé dans home
 
 class MiniNews extends StatefulWidget {
+  final int id;
   final String subject;
   final String author;
   final String points;
@@ -61,6 +67,7 @@ class MiniNews extends StatefulWidget {
 
   MiniNews(
       {Key key,
+      this.id,
       this.subject,
       this.author,
       this.points,
@@ -86,46 +93,79 @@ class _MiniNewsState extends State<MiniNews> {
   }
 
   Widget build(BuildContext context) {
-    final bloc = BlocProvider.of(context);
-
-    void _tapedDown() {
-      // todo newID => Streams(news)
-      bloc.updateUrl.add(widget.url);
-      print(widget.url);
-      setState(() {
-        child = _NewsAltHelp();
-      });
-    }
-
-    void _tapedUp() {
-      setState(() {
-        child = _News(
-          subject: widget.subject,
-          author: widget.author,
-          points: widget.points,
-          commentsCount: widget.commentsCount,
+    return Dismissible(
+      key: Key(widget.id.toString() + Random().nextInt(10000).toString()),
+      resizeDuration: const Duration(milliseconds: 1),
+      onDismissed: (DismissDirection direction) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => DisplayNews(widget.url)),
         );
-      });
-    }
-
-    return GestureDetector(
-      onTapDown: (_) {
-        _tapedDown();
       },
-      onTapUp: (_) {
-        _tapedUp();
-      },
-      onTapCancel: () {
-        _tapedUp();
-      },
+      background: DismissibleBkgNews(),
+      secondaryBackground: DismissibleBkgComments(),
       child: Container(
-        padding: EdgeInsets.only(top: 5.0, right: 5.0, left: 5.0, bottom: 5.0),
-        decoration: BoxDecoration(
-            border: Border(
-                bottom: BorderSide(
-          color: Colors.black26,
-        ))),
+        color: Color.fromRGBO(246, 246, 239, 1.0),
+        margin: EdgeInsets.only(bottom: 1.0),
+        padding: EdgeInsets.only(top: 7.0, right: 5.0, left: 5.0, bottom: 5.0),
         child: child,
+      ),
+    );
+  }
+}
+
+class DismissibleBkgNews extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: Colors.deepOrange,
+      padding: EdgeInsets.only(top: 10.0, bottom: 10.0),
+      child: Row(
+        children: <Widget>[
+          Text(' '),
+          Icon(
+            Icons.open_in_new,
+            size: 16.0,
+            color: Colors.white,
+          ),
+          Text(
+            '  Display news',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 16.0,
+              //fontWeight: FontWeight.bold,
+            ),
+          )
+        ],
+      ),
+    );
+  }
+}
+
+class DismissibleBkgComments extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: Colors.deepOrange,
+      padding: EdgeInsets.only(top: 10.0, bottom: 10.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: <Widget>[
+          Text(
+            'Comments  ',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 16.0,
+              //fontWeight: FontWeight.bold,
+            ),
+          ),
+          Icon(
+            Icons.comment,
+            size: 16.0,
+            color: Colors.white,
+          ),
+          Text('  '),
+        ],
       ),
     );
   }
@@ -169,8 +209,8 @@ class _News extends StatelessWidget {
 
               Text(
                 author,
-                style:
-                    TextStyle(color: Colors.grey, fontSize: 11.0, height: 1.3),
+                style: TextStyle(
+                    color: Colors.grey.shade700, fontSize: 11.0, height: 1.3),
               ),
 
               // spacer
@@ -189,60 +229,31 @@ class _News extends StatelessWidget {
               Icon(
                 Icons.thumb_up,
                 size: 15.0,
+                color: Colors.deepOrange,
               ),
               Text(
                 points,
                 style: TextStyle(
                   fontSize: 10.0,
+                  color: Colors.grey.shade900,
                 ),
               ),
               Icon(
                 Icons.comment,
                 size: 15.0,
+                color: Colors.deepOrange,
               ),
               Text(
                 commentsCount,
                 style: TextStyle(
                   fontSize: 10.0,
+                  color: Colors.grey.shade900,
                 ),
               ),
             ],
           ),
         ),
       ],
-    );
-  }
-}
-
-class _NewsAltHelp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.only(top: 15.0, bottom: 15.0),
-      child: Row(
-        children: <Widget>[
-          Icon(Icons.arrow_left),
-          Expanded(
-            child: Text('Comments'),
-          ),
-          Text('Show News'),
-          Icon(Icons.arrow_right),
-        ],
-      ),
-      /*child: Row(
-        children: <Widget>[
-          Container(
-              child: Text(
-            'gauche',
-            textAlign: TextAlign.left,
-          )),
-          Container(
-              child: Text(
-            'droite',
-            textAlign: TextAlign.right,
-          )),
-        ],
-      ),*/
     );
   }
 }

@@ -4,7 +4,6 @@ import 'blocs/bloc_provider.dart';
 import 'blocs/Webview_bloc.dart';
 
 import 'screens/Home.dart';
-import 'screens/ShowNews.dart';
 
 void main() {
   final bloc = WebviewBloc();
@@ -20,16 +19,13 @@ class Whohn extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      wvBloc: bloc,
-      child: MaterialApp(
+        wvBloc: bloc,
+        child: MaterialApp(
           title: 'whohn',
-          home: PageView(
-            children: <Widget>[
-              Home(),
-              // streamBuilder
-              ShowNews(),
-            ],
-          )),
-    );
+          theme: ThemeData(
+            primaryColor: Colors.deepOrange,
+          ),
+          home: Home(),
+        ));
   }
 }

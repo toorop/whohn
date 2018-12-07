@@ -69,45 +69,11 @@ class HN {
       throw Exception('bad status code from whohn API: ${response.statusCode}');
     }
     final parsed = jsonDecode(response.body);
-    parsed.forEach((_, item){
-      stories.add(Item(
-          item['id'],
-          item['time'],
-          item['by'],
-          [],
-          item['score'],
-          item['descendants'],
-          item['title'],
-          item['type'],
-          item['url']));
+    parsed.forEach((_, item) {
+      stories.add(Item(item['id'], item['time'], item['by'], [], item['score'],
+          item['descendants'], item['title'], item['type'], item['url']));
     });
 
     return stories;
-
-    /*await Future.forEach(parsed, (item) {
-      stories.add(await Item.getInstance(id.toString()));
-    });*/
-
-    /*
-    print("foreach");
-
-    List<dynamic>.from(parsed).forEach((item) {
-      print(item);
-      stories.add(Item(
-          item['id'],
-          item['time'],
-          item['by'],
-          [],
-          item['score'],
-          item['descendants'],
-          item['title'],
-          item['type'],
-          item['url']));
-    });
-
-    print("return");
-
-    return stories;*/
-
   }
 }
