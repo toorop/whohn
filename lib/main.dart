@@ -21,6 +21,7 @@ class Whohn extends StatelessWidget {
     return BlocProvider(
         wvBloc: bloc,
         child: MaterialApp(
+          debugShowCheckedModeBanner: false,
           title: 'whohn',
           theme: ThemeData(
             primaryColor: Colors.deepOrange,

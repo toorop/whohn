@@ -7,7 +7,82 @@ import './ShowNews.dart';
 import '../hn/hn.dart';
 import '../hn/item.dart';
 
-class Home extends StatelessWidget {
+
+
+class Home extends StatefulWidget {
+  @override
+  _HomeState createState() => _HomeState();
+}
+
+class _HomeState extends State<Home> {
+  
+  List<Item> _items;
+
+  @override
+  void initState()  {
+    super.initState();
+    _items= [];
+  }
+
+
+
+
+  @override
+  Widget build(BuildContext context) {
+    _handleRefresh();
+
+    Widget body;
+
+    if (_items.isEmpty){
+      body= Center(child: CircularProgressIndicator());
+    } else {
+      body = RefreshIndicator(
+        child: Container(
+          color: Colors.deepOrange.shade100,
+          child: ListView(
+            padding: const EdgeInsets.only(top: 1.0),
+            children: _items.map((item) {
+              return MiniNews(
+                id: item.id,
+                subject: item.title,
+                author: item.by,
+                points: item.score.toString(),
+                commentsCount: item.descendants.toString(),
+                url: item.url,
+              );
+            }).toList(),
+          ),
+        ),
+        onRefresh: _handleRefresh,
+        color: Colors.deepOrange,
+      );
+    }
+
+    return Scaffold(
+      appBar: AppBar(
+        centerTitle: true,
+        title: Text(
+          'What\'s 🔥 on Hacker News ?',
+        ),
+      ),
+      body: body,
+    );
+  }
+
+  Future<Null> _handleRefresh() async{
+    List<Item> _i = await HN().getTopStories();
+    setState(() {
+      _items = _i;
+    });
+
+  }
+
+
+}
+
+/*
+
+class Home2 extends StatelessWidget {
   final Future<List<Item>> items = HN().getTopStories();
 
   @override
@@ -52,10 +127,9 @@ class Home extends StatelessWidget {
           );
         });
   }
-}
+}*/
 
 // mininews utilisé dans home
-
 class MiniNews extends StatefulWidget {
   final int id;
   final String subject;
