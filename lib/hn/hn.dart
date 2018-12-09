@@ -48,9 +48,6 @@ class HN {
 
     await Future.wait(futures);
 
-    print('end');
-
-    print(stories);
     stories.forEach((Item item) => print(item.title));
 
     return stories;
@@ -64,7 +61,7 @@ class HN {
   // via API
   Future<List<Item>> getTopStories() async {
     List<Item> stories = [];
-    Response response = await get('https://api.whohn.app/top/0/30');
+    Response response = await get('https://api.whohn.app/top/0/40');
     if (response.statusCode != 200) {
       throw Exception('bad status code from whohn API: ${response.statusCode}');
     }

@@ -3,11 +3,10 @@ import 'dart:async';
 import 'dart:math';
 
 import './ShowNews.dart';
+import './DisplayComments.dart';
 
 import '../hn/hn.dart';
 import '../hn/item.dart';
-
-
 
 class Home extends StatefulWidget {
   @override
@@ -15,49 +14,20 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  
-  List<Item> _items;
+  List<Item> _items = new List<Item>();
 
   @override
-  void initState()  {
+  void initState() {
     super.initState();
-    _items= [];
+
+    _handleRefresh();
   }
-
-
-
 
   @override
   Widget build(BuildContext context) {
-    _handleRefresh();
-
-    Widget body;
-
-    if (_items.isEmpty){
-      body= Center(child: CircularProgressIndicator());
-    } else {
-      body = RefreshIndicator(
-        child: Container(
-          color: Colors.deepOrange.shade100,
-          child: ListView(
-            padding: const EdgeInsets.only(top: 1.0),
-            children: _items.map((item) {
-              return MiniNews(
-                id: item.id,
-                subject: item.title,
-                author: item.by,
-                points: item.score.toString(),
-                commentsCount: item.descendants.toString(),
-                url: item.url,
-              );
-            }).toList(),
-          ),
-        ),
-        onRefresh: _handleRefresh,
-        color: Colors.deepOrange,
-      );
-    }
-
+    /*if (_items.isEmpty) {
+      _handleRefresh();
+    }*/
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -65,44 +35,15 @@ class _HomeState extends State<Home> {
           'What\'s 🔥 on Hacker News ?',
         ),
       ),
-      body: body,
-    );
-  }
-
-  Future<Null> _handleRefresh() async{
-    List<Item> _i = await HN().getTopStories();
-    setState(() {
-      _items = _i;
-    });
-
-  }
-
-
-}
-
-/*
-
-class Home2 extends StatelessWidget {
-  final Future<List<Item>> items = HN().getTopStories();
-
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<List<Item>>(
-        future: items,
-        builder: (BuildContext context, AsyncSnapshot<List<Item>> snapshot) {
-          Widget body;
-          switch (snapshot.connectionState) {
-            case ConnectionState.none:
-            case ConnectionState.active:
-            case ConnectionState.waiting:
-              body = Center(child: CircularProgressIndicator());
-              break;
-            case ConnectionState.done:
-              body = Container(
-                color: Colors.deepOrange,
+      body: _items.isEmpty
+          ? Center(child: CircularProgressIndicator())
+          : RefreshIndicator(
+              child: Container(
+                color: Colors.deepOrange.shade100,
                 child: ListView(
                   padding: const EdgeInsets.only(top: 1.0),
-                  children: snapshot.data.map((item) {
+                  children: _items.map((item) {
+                    //print(item.title);
                     return MiniNews(
                       id: item.id,
                       subject: item.title,
@@ -113,21 +54,25 @@ class Home2 extends StatelessWidget {
                     );
                   }).toList(),
                 ),
-              );
-          }
-
-          return Scaffold(
-            appBar: AppBar(
-              centerTitle: true,
-              title: Text(
-                'What\'s 🔥 on Hacker News ?',
               ),
+              onRefresh: _handleRefresh,
+              color: Colors.deepOrange,
             ),
-            body: body,
-          );
-        });
+    );
   }
-}*/
+
+  Future<Null> _handleRefresh() async {
+    setState(() {
+      _items = new List<Item>();
+    });
+    List<Item> _i = await HN().getTopStories();
+    print('on setstate');
+    setState(() {
+      //print(_i[3].title);
+      _items = _i;
+    });
+  }
+}
 
 // mininews utilisé dans home
 class MiniNews extends StatefulWidget {
@@ -171,10 +116,17 @@ class _MiniNewsState extends State<MiniNews> {
       key: Key(widget.id.toString() + Random().nextInt(10000).toString()),
       resizeDuration: const Duration(milliseconds: 1),
       onDismissed: (DismissDirection direction) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => DisplayNews(widget.url)),
-        );
+        if (direction == DismissDirection.startToEnd) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => DisplayNews(widget.url)),
+          );
+        } else {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => DisplayComments()),
+          );
+        }
       },
       background: DismissibleBkgNews(),
       secondaryBackground: DismissibleBkgComments(),
